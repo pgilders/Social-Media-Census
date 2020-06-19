@@ -7,7 +7,7 @@ Performs a Facebook census, gathering the number of active users in each age bra
 Scraping done with Selenium. Requires a browser driver installed.
 Saves data to csv.
 
-@author: Patrick Gildersleve - patrick.gildersleve ~at~ oii.ox.ac.uk
+@author: Patrick Gildersleve - Oxford Internet Institute
 """
 from selenium import webdriver
 from selenium.webdriver.common.by import By
