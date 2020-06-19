@@ -7,18 +7,20 @@ Scrape population data by age and country demographics from facebook & instagram
 
 Populations stored in csvs in the Data folder, column for each country, row for each 1 year age bracket from 18 to 65+ (i.e. all users 65 and older are in one category). By default each entry is the plain text range supplied by facebook / instagram. Also included is a file for facebook where the range suppied in each cell is replaced by the max value.
 
-This data is the subject of study in _Öhman, C. J., & Watson, D. (2019). Are the dead taking over Facebook? A Big Data approach to the future of death online. Big Data & Society, 6(1), 2053951719842540_. Do let me know if you use it for your own projects, or would like expanded data sets.
+This data is the subject of study in _Öhman, C. J., & Watson, D. (2019). Are the dead taking over Facebook? A Big Data approach to the future of death online. Big Data & Society, 6(1), 2053951719842540_. Do let me know if you use it for your own projects, or would like expanded data sets, there is certainly scope for a much larger, automated project!
 
 ## Cite this work
+
+Use the GitHub URL (www.github.com/pgilders/Social-Media-Census) in text, and the following in references:
 
 _Patrick Gildersleve. (2020, June 19). pgilders/Social-Media-Census: Social Media Census v1.0 (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.3901553_
 
 Bibtex:
 ```
-@article{patrick gildersleve_2020,
+@misc{patrick gildersleve_2020,
 title={pgilders/Social-Media-Census: Social Media Census v1.0},
 DOI={10.5281/zenodo.3901553},
-abstractNote={<p>Scripts and data from scraping Facebook and Instagram for number of users by age per country.</p>},
+abstractNote={Scripts and data from scraping Facebook and Instagram for number of users by age per country.},
 publisher={Zenodo},
 author={Patrick Gildersleve},
 year={2020},
