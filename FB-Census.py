@@ -34,7 +34,7 @@ country_codes = ['US',
  'HR',
  'DK',
  'DO',
- 'EG', 
+ 'EG',
  'FI',
  'FR',
  'DE',
@@ -240,9 +240,6 @@ email =''
 pwd = ''
 account_id = ''
 
-timeout = 10 # threshold for timeout in seconds. Reccommended to decrease this for a manageable overall scrape time, with the tradeoff of possibly more missing data.
-savefilepath = '' #Where to save the results to 
-
 imp = input('Would you like to import existing csvs? (Y/N)')
 
 if imp.lower() in ['y', 'yes', 'true']:    
@@ -251,21 +248,21 @@ if imp.lower() in ['y', 'yes', 'true']:
     dfpath = input('Enter path to text dataframe:')
     Ndfpath = input('Enter path to max numbers dataframe:')
     
-    pop_data = pd.read_csv(dfpath, index_col=0) # create dataframe for population data (string)
-    Npop_data = pd.read_csv(Ndfpath, index_col=0) # create dataframe for population data (number)
+    pop_data = pd.read_csv(dfpath) # create dataframe for population data (string)
+    Npop_data = pd.read_csv(Ndfpath) # create dataframe for population data (number)
     
     # 
     c = input('Enter country code to start on:') 
     y = int(input('Enter age to start on:'))
-    firstpass = True
+    firstpass == True
 
 else:
     print('Creating new dataframes')
     c = 'US'
     y = 18
     pop_data = pd.DataFrame(index=range(18, 66), columns=country_codes) # create dataframe for population data (string)
-    Npop_data = pd.DataFrame(index=range(18, 66), columns=country_codes) # create dataframe for population data (string)
-    firstpass = False    
+    Npop_data = pd.DataFrame(index=range(18, 66), columns=country_codes) # create dataframe for population data (number)
+    firstpass == False    
 
 error_list = []
 
@@ -275,14 +272,13 @@ driver.get('https://business.facebook.com/login/') # navigate to fb login page
 driver.find_element_by_id("email").send_keys(email) # enter authentication details
 driver.find_element_by_id("pass").send_keys(pwd)
 driver.find_element_by_id("loginbutton").click()
-wait = WebDriverWait(driver, timeout) 
+wait = WebDriverWait(driver, 30) # Adjust timeout limit here. Reccommended to decrease this for a manageable overall scrape time.
 element = wait.until(EC.visibility_of_element_located((By.ID, 'contentCol'))) # wait for page to load, timeout after 30s - shouldn't happen
 
-
-print('Starting scrape')
 timeout_counter = 0
-for country in country_codes[country_codes.index(c):]: # loop through countries    
-    if timeout_counter>=3: # Break if consecutive timeouts        
+for age in range(y, 66): # loop through ages
+    
+    if timeout_counter>=5: # Break if consecutive timeouts        
         try: # try to make simple connection, abort all scraping if not possible
             driver.get('https://www.facebook.com/ads/audience-insights/people?act=%s&age=18-18&country=US' %account_id) # attempt to navigate to audience insights page for US18   
             element = wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'div._10zm'), " monthly active people")) # wait til element loads, times out after 30s
@@ -291,21 +287,18 @@ for country in country_codes[country_codes.index(c):]: # loop through countries
             print("Connection to FB lost - scraping aborted")
             break
     
-    
-    for age in range(18, 66): # loop through ages    
-        if firstpass == True and age < y: # 
+    for country in country_codes: # loop through countries
+        
+        if firstpass == True and country_codes.index(country) < country_codes.index(c): # 
             continue
-        firstpass = False
+        firstpass == False
             
         
-        if timeout_counter>=3: # if there are 3 timeout errors in a row
+        if timeout_counter>=5:
             try: # try to make simple connection, abort all scraping if not possible
                 driver.get('https://www.facebook.com/ads/audience-insights/people?act=%s&age=18-18&country=US' %account_id) # attempt to navigate to audience insights page for US18   
-                element = wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'div._10zm'), " monthly active people")) # wait til element loads
-                print('Connection is ok - appears there is missing data for %s. Skipping to next country.' %country)
+                element = wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'div._10zm'), " monthly active people")) # wait til element loads, times out after 30s
                 timeout_counter=0 # reset if loaded
-                break  # skip to next country
-
             except TimeoutException: # abort if timeout on US18
                 print("Connection to FB lost - scraping aborted")
                 break     
@@ -317,7 +310,7 @@ for country in country_codes[country_codes.index(c):]: # loop through countries
             element = wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, 'div._10zm'), " monthly active people")) # wait til element loads, times out after 30s
             
             html = driver.page_source # get the page html
-            soup = BeautifulSoup(html, "html5lib") # import into beautifulsoup
+            soup = BeautifulSoup(html, "html5lib") # impotrt into beautifulsoup
             txt = soup.findAll("div", {"class":"_10zm"})[0].text.split(' monthly')[0] # get the population description text
             
             lage = age
@@ -329,7 +322,7 @@ for country in country_codes[country_codes.index(c):]: # loop through countries
             timeout_counter = 0 # reset timeout counter on completion
             
         except TimeoutException:
-            print("Timed out - check connection or validate that data for country code %s, age %d exists" %(country, age))
+            print("Timed out - check connection or validate that data for country code %s exists" %country)
             
             pop_data.loc[age, country] = 0 # Set values as 0
             Npop_data.loc[age, country] = 0
@@ -343,7 +336,7 @@ driver.quit() # exit session
 
 ### Handle any incomplete requests
 p=''
-if timeout_counter >= 3:
+if timeout_counter >= 5:
     print("Repeated consecutive timeouts, scraping aborted, check connection. Partial data being saved.")
     print("Errors:", error_list)
     p = "_(partial)"
@@ -354,9 +347,10 @@ elif len(error_list)>0:
 print('Scraping aborted at: %s, %d.\nLast nonzero element: %s, %d' %(country, age, lcountry, lage))
    
 ### save data to csvs
+filepath = '' #Where to save the results to 
 date = datetime.datetime.today().strftime("%d-%m-%y") # datestamp
 
-pop_data.to_csv(savefilepath+"popdata_%s.csv" %(date+p), sep = ',', header=True, index=True)
-Npop_data.to_csv(savefilepath+"Npopdata_%s.csv" %(date+p), sep = ',', header=True, index=True)
+pop_data.to_csv(filepath+"popdata_%s.csv" %(date+p), sep = ',', header=True, index=True)
+Npop_data.to_csv(filepath+"Npopdata_%s.csv" %(date+p), sep = ',', header=True, index=True)
 
 print('Data Saved')
